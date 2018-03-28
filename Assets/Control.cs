@@ -10,6 +10,7 @@ public class Control : MonoBehaviour
     public GameObject Robot;
     public GameObject Obstacle;
     public List<GameObject> robotList = new List<GameObject>();
+    public List<GameObject> goalList = new List<GameObject>();
     public List<GameObject> obstacleList = new List<GameObject>();
     public int nRobots;
     public int nObstacles;
@@ -37,11 +38,16 @@ public class Control : MonoBehaviour
         yScale = 1f / 10;
         createRobots();
         createObstacles();
+        Debug.Log("ScreenHeight: " + Screen.height + ", ScreenWidth: " + Screen.width);
+        for (int i = 0; i < nRobots; i++)
+            Debug.Log("Robot " + i + " is on " + robotList[i].transform.position+" "+robotList[i].GetComponent<RobotControl>().Goal.transform.position);
+        for (int i = 0; i < nObstacles; i++)
+            Debug.Log("Obstacle " + i + " is on " + obstacleList[i].transform.position);
 
     }
     void Update()
     {
-       
+        //Debug.Log(Camera.main.ScreenToWorldPoint(Input.mousePosition));
     }
 
     void createRobots()
@@ -74,6 +80,7 @@ public class Control : MonoBehaviour
                         {
                             int nPolygons;
                             GameObject robotTemp = Instantiate(Robot, new Vector3(0, 0, 0), Quaternion.identity) as GameObject;
+                            GameObject goalTemp = Instantiate(Robot, new Vector3(0, 0, 0), Quaternion.identity) as GameObject;
                             line = theReader.ReadLine(); line = theReader.ReadLine(); line = theReader.ReadLine();
                             System.Int32.TryParse(line, out nPolygons);
                             robotTemp.SendMessage("setNPolygons", nPolygons);
@@ -97,6 +104,9 @@ public class Control : MonoBehaviour
                                 GameObject polyTemp = Instantiate(Polygon, new Vector3(0, 0, 0), Quaternion.identity, robotTemp.transform) as GameObject;
                                 polyTemp.SendMessage("setColor", Color.blue);
                                 polyTemp.SendMessage("TheStart", vertices);
+                                GameObject polyTemp2 = Instantiate(Polygon, new Vector3(0, 0, 0), Quaternion.identity, goalTemp.transform) as GameObject;
+                                polyTemp2.SendMessage("setColor", Color.yellow);
+                                polyTemp2.SendMessage("TheStart", vertices);
                             }
                             line = theReader.ReadLine(); line = theReader.ReadLine();
                             //"# initial configuration"
@@ -104,22 +114,29 @@ public class Control : MonoBehaviour
                             float x = float.Parse(initcfg[0], System.Globalization.CultureInfo.InvariantCulture.NumberFormat) * xScale;
                             float y = float.Parse(initcfg[1], System.Globalization.CultureInfo.InvariantCulture.NumberFormat) * yScale;
                             float arc = float.Parse(initcfg[2], System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
-                            Debug.Log("init-  x: " + x + "  y: " + y);
-                            Debug.Log("Scale:" + xScale);
+                            //Debug.Log("init-  x: " + x + "  y: " + y);
+                            //Debug.Log("Scale:" + xScale);
                             robotTemp.transform.position = new Vector3(x, y, 0);
                             robotTemp.transform.eulerAngles = new Vector3(
                                         robotTemp.transform.eulerAngles.x,
                                         robotTemp.transform.eulerAngles.y,
                                         robotTemp.transform.eulerAngles.z + arc
                             );
+     
                             line = theReader.ReadLine(); line = theReader.ReadLine();
                             //# goal configuration
                             string[] goalcfg = line.Split(' ');
                             float x2 = float.Parse(goalcfg[0], System.Globalization.CultureInfo.InvariantCulture.NumberFormat) * xScale;
                             float y2 = float.Parse(goalcfg[1], System.Globalization.CultureInfo.InvariantCulture.NumberFormat) * yScale;
                             float arc2 = float.Parse(goalcfg[2], System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
-                            robotTemp.SendMessage("setGoalPosition", new Vector2(x2, y2));
-                            robotTemp.SendMessage("setGoalArc", arc2);
+                            goalTemp.transform.position = new Vector3(x2, y2, 0);
+                            goalTemp.transform.eulerAngles = new Vector3(
+                                        goalTemp.transform.eulerAngles.x,
+                                        goalTemp.transform.eulerAngles.y,
+                                        goalTemp.transform.eulerAngles.z + arc2
+                            );
+                            //robotTemp.SendMessage("setGoalPosition", new Vector2(x2, y2));
+                            //robotTemp.SendMessage("setGoalArc", arc2);
                             line = theReader.ReadLine(); line = theReader.ReadLine();
                             int nControlPoints;
                             System.Int32.TryParse(line, out nControlPoints);
@@ -127,16 +144,25 @@ public class Control : MonoBehaviour
                             for (int j = 0; j < nControlPoints; j++)
                             {
                                 line = theReader.ReadLine(); line = theReader.ReadLine();
-                                Debug.Log("Cotrol " + j + " " + line);
+                                //Debug.Log("Cotrol " + j + " " + line);
                                 string[] cp = line.Split(' ');
                                 float cpX = float.Parse(cp[0], System.Globalization.CultureInfo.InvariantCulture.NumberFormat) * xScale;
                                 float cpY = float.Parse(cp[1], System.Globalization.CultureInfo.InvariantCulture.NumberFormat) * yScale;
                                 controlPoints[j] = new Vector2(cpX, cpY);
                             }
                             robotTemp.SendMessage("setControlPoints", controlPoints);
+                            robotTemp.name = "Robot " + i;
                             robotTemp.AddComponent(typeof(Rigidbody2D));
                             robotTemp.AddComponent(typeof(BoxCollider2D));
                             robotTemp.gameObject.GetComponent<Rigidbody2D>().gravityScale = 0;
+                            
+                            goalTemp.SendMessage("setControlPoints", controlPoints);
+                            goalTemp.name = "Goal for Robot " + i;
+                            goalTemp.AddComponent(typeof(Rigidbody2D));
+                            goalTemp.AddComponent(typeof(BoxCollider2D));
+                            goalTemp.gameObject.GetComponent<Rigidbody2D>().gravityScale = 0;
+                            goalTemp.gameObject.GetComponent<Rigidbody2D>().constraints = RigidbodyConstraints2D.FreezeAll;
+                            robotTemp.SendMessage("setGoal", goalTemp);
                             robotList.Add(robotTemp);
                         }
                     }
@@ -145,11 +171,6 @@ public class Control : MonoBehaviour
             while (line != null);
             // Done reading, close the reader and return true to broadcast success    
             theReader.Close();
-            Debug.Log(robotList.Count);
-            for (int i = 0; i < robotList.Count; i++)
-            {
-                Debug.Log(i + " " + robotList[i]);
-            }
             return;
         }
 
@@ -217,14 +238,15 @@ public class Control : MonoBehaviour
                             float x = float.Parse(initcfg[0], System.Globalization.CultureInfo.InvariantCulture.NumberFormat) * xScale;
                             float y = float.Parse(initcfg[1], System.Globalization.CultureInfo.InvariantCulture.NumberFormat) * yScale;
                             float arc = float.Parse(initcfg[2], System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
-                            Debug.Log("init-  x: " + x + "  y: " + y);
-                            Debug.Log("Scale:" + xScale);
+                            //Debug.Log("init-  x: " + x + "  y: " + y);
+                            //Debug.Log("Scale:" + xScale);
                             obstacleTemp.transform.position = new Vector3(x, y, 0);
                             obstacleTemp.transform.eulerAngles = new Vector3(
                                         obstacleTemp.transform.eulerAngles.x,
                                         obstacleTemp.transform.eulerAngles.y,
                                         obstacleTemp.transform.eulerAngles.z + arc
                             );
+                            obstacleTemp.name = "Obstacle " + i;
                             obstacleTemp.AddComponent(typeof(Rigidbody2D));
                             obstacleTemp.AddComponent(typeof(BoxCollider2D));
                             obstacleTemp.gameObject.GetComponent<Rigidbody2D>().gravityScale = 0;
@@ -237,11 +259,6 @@ public class Control : MonoBehaviour
             while (line != null);
             // Done reading, close the reader and return true to broadcast success    
             theReader.Close();
-            Debug.Log(obstacleList.Count);
-            for (int i = 0; i < obstacleList.Count; i++)
-            {
-                Debug.Log(i + " " + obstacleList[i]);
-            }
             return;
         }
 

@@ -8,9 +8,9 @@ public class RobotControl : MonoBehaviour
     public Vector2[] controlPoints;
     public int nPolygons;
     //public List<GameObject> polygonList = new List<GameObject>();
-    public Vector2 goalPosition;
-    public float goalArc;
-
+    //public Vector2 goalPosition;
+    //public float goalArc;
+    public GameObject Goal=null;
     // Use this for initialization
     void Start()
     {
@@ -26,7 +26,8 @@ public class RobotControl : MonoBehaviour
     Vector2 clickVec = new Vector2(0, 0);
     void Update()
     {
-
+       /* if(Goal!=null)
+            Debug.Log("Goal " + Goal.transform.position);*/
 
         if (isPicked && Input.GetMouseButtonUp(0))
             isPicked = false;
@@ -43,6 +44,8 @@ public class RobotControl : MonoBehaviour
 
             // if you want to smooth movement then lerp it
 
+            Debug.Log(this.name + " " + transform.position);
+
         }
         if (isRotated)
         {
@@ -50,7 +53,7 @@ public class RobotControl : MonoBehaviour
             //transform.Rotate(0, 0,5 , Space.World);
             Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             Vector2 vec = new Vector2(mousePos.x - transform.position.x, mousePos.y - transform.position.y);
-            Debug.Log("isRotated " + vec + ",  " + prevVec+ ",  " +clickVec);
+            //Debug.Log("isRotated " + vec + ",  " + prevVec+ ",  " +clickVec);
             if (vec.x != prevVec.x || vec.y != prevVec.y)
             {
                 double theta = Math.Atan2(vec.y,vec.x)-Math.Atan2(prevVec.y, prevVec.x);
@@ -59,12 +62,11 @@ public class RobotControl : MonoBehaviour
                 theta = theta * Mathf.Rad2Deg;
                 //if (theta < 0)
                   //  theta += 360;
-                Debug.Log(theta+" "+ Math.Atan2(vec.y, vec.x)+" "+ Math.Atan2(prevVec.y, prevVec.x));
+               // Debug.Log(theta+" "+ Math.Atan2(vec.y, vec.x)+" "+ Math.Atan2(prevVec.y, prevVec.x));
                 transform.Rotate(0, 0, (float)theta,Space.World);
             }
 
         }
-
     }
 
     void OnMouseOver()
@@ -89,13 +91,16 @@ public class RobotControl : MonoBehaviour
     {
         nPolygons = n;
     }
-    public void setGoalPosition(Vector2 v)
+    /*public void setGoalPosition(Vector2 v)
     {
         goalPosition = v;
     }
     public void setGoalArc(float arc)
     {
         goalArc = arc;
+    }*/
+    public void setGoal(GameObject goal)
+    {
+        Goal = goal;
     }
-
 }

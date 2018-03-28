@@ -18,7 +18,6 @@ public class ObstacleControl : MonoBehaviour
     bool isPicked;
     bool isRotated;
     //public float RotationSpeed = 500;
-    Vector2 clickPos = new Vector2(0, 0);
 
     void Update()
     {
@@ -39,6 +38,9 @@ public class ObstacleControl : MonoBehaviour
             //transform.position = Vector2.Lerp(transform.position, mousePos, 0.5f);
 
 
+            Debug.Log(this.name + " " + transform.position);
+
+
         }
         if (isRotated)
         {
@@ -55,7 +57,6 @@ public class ObstacleControl : MonoBehaviour
 
     void OnMouseOver()
     {
-        clickPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         if (Input.GetMouseButtonDown(0))
         {
             Debug.Log(this.name + " is clicked");
