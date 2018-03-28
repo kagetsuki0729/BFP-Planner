@@ -10,7 +10,7 @@ public class RobotControl : MonoBehaviour
     //public List<GameObject> polygonList = new List<GameObject>();
     public Vector2 goalPosition;
     public float goalArc;
-    
+
     // Use this for initialization
     void Start()
     {
@@ -22,15 +22,17 @@ public class RobotControl : MonoBehaviour
     bool isPicked;
     bool isRotated;
     //public float RotationSpeed = 500;
+    Vector2 prevVec = new Vector2(0, 0);
+    Vector2 clickVec = new Vector2(0, 0);
     void Update()
     {
 
 
-        if (isPicked&&Input.GetMouseButtonUp(0))       
+        if (isPicked && Input.GetMouseButtonUp(0))
             isPicked = false;
-        if (isRotated&&Input.GetMouseButtonUp(1))
+        if (isRotated && Input.GetMouseButtonUp(1))
             isRotated = false;
-      
+
 
         if (isPicked)
         {
@@ -42,22 +44,43 @@ public class RobotControl : MonoBehaviour
             // if you want to smooth movement then lerp it
 
         }
-        if (isRotated) {
+        if (isRotated)
+        {
             //Debug.Log("~ "+ Input.GetAxis("Mouse X") * RotationSpeed * Time.deltaTime + " "+ Input.GetAxis("Mouse Y") * RotationSpeed * Time.deltaTime);
-            transform.Rotate(0, 0,5 , Space.World);
+            //transform.Rotate(0, 0,5 , Space.World);
+            Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            Vector2 vec = new Vector2(mousePos.x - transform.position.x, mousePos.y - transform.position.y);
+            Debug.Log("isRotated " + vec + ",  " + prevVec+ ",  " +clickVec);
+            if (vec.x != prevVec.x || vec.y != prevVec.y)
+            {
+                double theta = Math.Atan2(vec.y,vec.x)-Math.Atan2(prevVec.y, prevVec.x);
+                prevVec.x = vec.x;
+                prevVec.y = vec.y;
+                theta = theta * Mathf.Rad2Deg;
+                //if (theta < 0)
+                  //  theta += 360;
+                Debug.Log(theta+" "+ Math.Atan2(vec.y, vec.x)+" "+ Math.Atan2(prevVec.y, prevVec.x));
+                transform.Rotate(0, 0, (float)theta,Space.World);
+            }
+
         }
 
     }
 
     void OnMouseOver()
     {
-        if(Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(0))
             isPicked = true;
         if (Input.GetMouseButtonDown(1))
+        {
             isRotated = true;
+            clickVec = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            clickVec.x = clickVec.x - transform.position.x;
+            clickVec.y = clickVec.y - transform.position.y;
+        }
 
     }
-    
+
     public void setControlPoints(Vector2[] v)
     {
         controlPoints = (Vector2[])v.Clone();

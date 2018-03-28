@@ -33,8 +33,8 @@ public class Control : MonoBehaviour
             );
         robot1.transform.position = new Vector3(20, 20, 0);
         */
-        xScale = 1f / 20;
-        yScale = 1f / 20;
+        xScale = 1f / 10;
+        yScale = 1f / 10;
         createRobots();
         createObstacles();
 
@@ -182,7 +182,8 @@ public class Control : MonoBehaviour
                     {
                         line = theReader.ReadLine();
                         System.Int32.TryParse(line, out nObstacles);
-                        for (int i = 0; i < nRobots; i++)
+                        Debug.Log("nObstacles: " + nObstacles);
+                        for (int i = 0; i < nObstacles; i++)
                         {
                             int nPolygons;
                             GameObject obstacleTemp = Instantiate(Obstacle, new Vector3(0, 0, 0), Quaternion.identity) as GameObject;
