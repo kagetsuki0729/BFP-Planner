@@ -60,8 +60,6 @@ public class RobotControl : MonoBehaviour
                 prevVec.x = vec.x;
                 prevVec.y = vec.y;
                 theta = theta * Mathf.Rad2Deg;
-                //if (theta < 0)
-                  //  theta += 360;
                // Debug.Log(theta+" "+ Math.Atan2(vec.y, vec.x)+" "+ Math.Atan2(prevVec.y, prevVec.x));
                 transform.Rotate(0, 0, (float)theta,Space.World);
             }
